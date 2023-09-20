@@ -344,11 +344,11 @@ def process_file(proto_file: FileDescriptorProto,
     ]
     proto_name = Path(proto_file.name).stem
     for item in [
-            dict(tpl="metrics_atoms.c.j2", ext='c'),
-            dict(tpl="metrics_atoms.h.j2", ext='h')
+        {"tpl":"metrics_atoms.c.j2", "ext":'c'},
+        {"tpl":"metrics_atoms.h.j2", "ext":'h'},
     ]:
         tm = jinja_template_env.get_template(item["tpl"])
-        tm_env = dict(env=VendorAtomEnv)
+        tm_env = {"env":VendorAtomEnv}
         rendered = tm.render(**tm_env)
         file = response.file.add()
         file_path = pkg.split('/')
