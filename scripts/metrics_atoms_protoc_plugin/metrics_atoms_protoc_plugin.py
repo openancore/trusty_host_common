@@ -60,14 +60,11 @@ from google.protobuf.compiler import plugin_pb2 as plugin
 from google.protobuf.descriptor_pb2 import FileDescriptorProto
 from google.protobuf.descriptor_pb2 import DescriptorProto
 from google.protobuf.descriptor_pb2 import FieldDescriptorProto
-from jinja2 import FileSystemLoader, Environment
+from jinja2 import Environment, PackageLoader
 
 DEBUG_READ_PB = False
 
-SCRIPT_DIR = Path(__file__).parent
-ROOT_DIR = SCRIPT_DIR.parents[4]
-
-jinja_template_loader = FileSystemLoader(searchpath=SCRIPT_DIR / "templates")
+jinja_template_loader = PackageLoader("templates_package")
 jinja_template_env = Environment(
     loader=jinja_template_loader,
     trim_blocks=True,
