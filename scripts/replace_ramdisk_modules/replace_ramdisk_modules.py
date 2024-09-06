@@ -46,7 +46,8 @@ def _parse_args():
         required=True)
     parser.add_argument(
         '--kernel-ramdisk',
-        help='filename of ramdisk to extract kernel modules from',
+        help='filename of ramdisk to extract kernel modules from, '
+             'or the path of an existing directory containing the modules',
         required=True)
     parser.add_argument(
         '--output-ramdisk',
@@ -65,7 +66,19 @@ class RamdiskFormat(enum.Enum):
 # Based on system/tools/mkbootimg/repack_bootimg.py
 class RamdiskImage:
     """A class that supports packing/unpacking a ramdisk."""
-    def __init__(self, ramdisk_img, directory):
+    def __init__(self, ramdisk_img, directory, allow_dir):
+        # The caller gave us a directory instead of an image
+        # Assume it's already been extracted.
+        if os.path.isdir(ramdisk_img):
+            if not allow_dir:
+                raise RuntimeError(
+                    f"Directory not allowed for image {ramdisk_img}")
+
+            self._ramdisk_img = None
+            self._ramdisk_format = None
+            self._ramdisk_dir = ramdisk_img
+            return
+
         self._ramdisk_img = ramdisk_img
         self._ramdisk_format = None
         self._ramdisk_dir = directory
@@ -171,9 +184,11 @@ def main():
         kernel_ramdisk = os.path.join(tempdir, _KERNEL_RAMDISK_DIR)
         os.mkdir(kernel_ramdisk)
         android_ramdisk = RamdiskImage(
-            args.android_ramdisk, os.path.join(tempdir, _ANDROID_RAMDISK_DIR))
+            args.android_ramdisk, os.path.join(tempdir, _ANDROID_RAMDISK_DIR),
+            allow_dir=False)
         kernel_ramdisk = RamdiskImage(
-            args.kernel_ramdisk, os.path.join(tempdir, _KERNEL_RAMDISK_DIR))
+            args.kernel_ramdisk, os.path.join(tempdir, _KERNEL_RAMDISK_DIR),
+            allow_dir=True)
         _replace_modules(android_ramdisk, kernel_ramdisk)
         android_ramdisk.repack(args.output_ramdisk)
 
